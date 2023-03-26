@@ -127,7 +127,7 @@ class Condi:
         ccolors = {"1":"magenta", "2":"green", "3":"blue" ,"4":"red", "5":"yellow"}
         color = ccolors[str(code)[0]]
         c = f"code: {colored(code, color)}"
-        print(f"\r[{colored('*', 'cyan')}] {c} ==> {colored(url, color)} => (size:{urlsize}){' '*100}")
+        print(f"\r[{colored('*', 'cyan')}] {c} ==> {colored(url, color)} => (size:{urlsize}){' '*100}", end=" ")
     
     def print_progress(self):
         while self.worker_loop:
@@ -162,7 +162,6 @@ class Condi:
         while self.worker_loop:
             word = self.qwords.get_nowait()
             if self.qwords.empty():
-                #break
                 self.worker_loop = False
                 continue
             else:
@@ -173,7 +172,8 @@ class Condi:
                 if req.status_code not in self.negative_codes:
                     self.total_found += 1
                     self.urls_found.append(self.found_url_str.format(req.status_code, url, len(req.content)))
-                    self.print_discovered(req.status_code, url, len(req.content))
+                    if self.worker_loop:
+                        self.print_discovered(req.status_code, url, len(req.content))
 
     def run_scan(self):
         print(banner)
@@ -190,10 +190,10 @@ class Condi:
             for thread in self.threads:
                 thread.start()
             
-            progress_thread = Thread(target=self.print_progress)
-            progress_thread.start()
-            progress_thread.join()
-            
+            #progress_thread = Thread(target=self.print_progress)
+            #progress_thread.start()
+            #progress_thread.join()
+            self.print_progress()
             for join_thread in self.threads:
                 join_thread.join()
 
