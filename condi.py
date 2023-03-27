@@ -4,12 +4,15 @@ import os
 import sys
 import time
 import json
-import requests
+import socket
 import argparse
 
 from queue import Queue
-from termcolor import colored
 from threading import Thread, active_count
+
+# External libraries
+import requests
+from termcolor import colored
 
 title = f"{'-'*9} condi.py || version: 0.0 || by @h0pper {'-'*9}"
 
@@ -34,6 +37,7 @@ helpmsg = f"""\r{banner}
     \r  -t threads      --->  Number of threads. Default is 10
     \r  -x extensions   --->  Comma separated extensions to include
     \r  -r restore      --->  Restore session from ".condi.restore" in your home folder
+    \r  -a user-agent   --->  Custom User-Agent string
 """
 
 class Condi_files:
@@ -101,12 +105,16 @@ class Condi:
         self.wordlist_file  = opts['wordlist']
         self.extensions     = opts['extensions']
         self.threads_num    = opts['threads_num']
+        self.user_agent     = opts['user_agent']
         
         self.found_url_str  = "--- code: {} -> {} (size: {})"
 
         self.make_checks()
         self.create_wordlist()
-    
+
+        self.headers = {'User-Agent': self.user_agent}
+        
+        self.check_host()
 
     def make_checks(self):
         if 'last_used' in opts:
@@ -122,6 +130,26 @@ class Condi:
         
         if self.url[-1] != "/":
             self.url += "/"
+
+        if self.user_agent == 'default':
+            self.user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36'
+
+    def check_host(self):
+        # Check for errors in the target host
+        try:
+            r = requests.get(self.url, headers=self.headers)
+        except requests.exceptions.ConnectionError:
+            not_found_msg = f"Error with \"{self.url}\". Name or service not known."
+            print(colored(not_found_msg, 'red'))
+            quit()
+        except requests.exceptions.InvalidURL:
+            invalid_url_msg = f"Invalid target URL: \"{self.url}\"."
+            print(colored(invalid_url_msg, 'red'))
+            quit()
+        except requests.exceptions.MissingSchema:
+            invalid_url_msg = f"Invalid target URL: \"{self.url}\"."
+            print(colored(invalid_url_msg, 'red'))
+            quit()
 
     def print_discovered(self, code, url, urlsize):
         ccolors = {"1":"magenta", "2":"green", "3":"blue" ,"4":"red", "5":"yellow"}
@@ -167,7 +195,7 @@ class Condi:
             else:
 
                 url = "{}{}".format(self.url, word)
-                req = requests.get(url, allow_redirects=False)
+                req = requests.get(url, headers=self.headers, allow_redirects=False)
                 self.count += 1
                 if req.status_code not in self.negative_codes:
                     self.total_found += 1
@@ -177,6 +205,8 @@ class Condi:
 
     def run_scan(self):
         print(banner)
+
+        # Print found urls from previous session
         if len(self.urls_found) > 0:
             msg = Condi_files().msg
             print(f"{colored(msg, 'cyan')}\n")
@@ -189,11 +219,9 @@ class Condi:
     
             for thread in self.threads:
                 thread.start()
-            
-            #progress_thread = Thread(target=self.print_progress)
-            #progress_thread.start()
-            #progress_thread.join()
+
             self.print_progress()
+
             for join_thread in self.threads:
                 join_thread.join()
 
@@ -204,6 +232,7 @@ class Condi:
             self.worker_loop = False
             opts['last_used'] = self.count
             opts['found'] = self.urls_found
+            # Create a session restore file if the current session is "Keyboard Interrupted"
             self.condi_files.save_file(opts, "condi.restore")
 
         finally:
@@ -220,9 +249,11 @@ if __name__ == "__main__":
     parser.add_argument('-x', dest='extensions', default=[""], type=str)
     parser.add_argument('-o', dest='outfile', type=str)
     parser.add_argument('-r', dest='restore', action="store_true")
+    parser.add_argument('-a', dest='user_agent', default='default', type=str)
     args = parser.parse_args()
 
     if args.restore:
+        # Restrore session
         restore_session = Condi_files()
         r_file = restore_session.restore_file
         opts = restore_session.open_file(r_file)
@@ -231,5 +262,6 @@ if __name__ == "__main__":
         print(helpmsg)
         sys.exit()
     else:
+        # return a dictionary from parsed arguments
         opts = vars(args)
         condi = Condi(opts).run_scan()
