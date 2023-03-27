@@ -41,7 +41,3 @@ If using Python 3.11
 ```bash
 sudo apt install python3-requests python3-termcolor
 ```
-
-## TODO
-- [ ] Add option to include/exclude status codes
-- [ ] Add option to set a User-Agent
