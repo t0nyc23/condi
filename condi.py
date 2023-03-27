@@ -20,7 +20,7 @@ banner = f"""
     \r{"="*len(title)}
     
     \r               either it's there or not                
-    \r  the breadth and the height, of an undiscovered first     
+    \r  the breath and the height, of an undiscovered first     
     
     \r{"="*len(title)}
     \r{title}
@@ -198,10 +198,13 @@ class Condi:
                 req = requests.get(url, headers=self.headers, allow_redirects=False)
                 self.count += 1
                 if req.status_code not in self.negative_codes:
-                    self.total_found += 1
-                    self.urls_found.append(self.found_url_str.format(req.status_code, url, len(req.content)))
-                    if self.worker_loop:
-                        self.print_discovered(req.status_code, url, len(req.content))
+                    if self.found_url_str.format(req.status_code, url, len(req.content)) in self.urls_found:
+                        continue
+                    else:
+                        self.total_found += 1
+                        self.urls_found.append(self.found_url_str.format(req.status_code, url, len(req.content)))
+                        if self.worker_loop:
+                            self.print_discovered(req.status_code, url, len(req.content))
 
     def run_scan(self):
         print(banner)
