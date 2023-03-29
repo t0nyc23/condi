@@ -58,7 +58,9 @@ class Condi_files:
             try:
                 with open(filename, 'w') as w:
                     for data in contents:
-                        w.write(f"{data}\n")
+                        results = "{}\t\t(code: {} | size: {})\n".format(
+                            data['url'],data['code'],data['size'])
+                        w.write(results)
                     print(f"Saving scan results at: {colored(filename, 'cyan')}")
             except PermissionError:
                 recover = f"{os.path.expanduser('~')}/condi_results.txt"
@@ -151,17 +153,27 @@ class Condi:
             print(colored(invalid_url_msg, 'red'))
             quit()
 
-    def print_discovered(self, code, url, urlsize):
-        ccolors = {"1":"magenta", "2":"green", "3":"blue" ,"4":"red", "5":"yellow"}
-        color = ccolors[str(code)[0]]
-        c = f"code: {colored(code, color)}"
-        print(f"\r[{colored('*', 'cyan')}] {c} ==> {colored(url, color)} => (size:{urlsize}){' '*100}", end=" ")
+    def print_discovered(self, found):
+        
+        code_colors = {"1":"magenta", "2":"green", "3":"blue" ,"4":"red", "5":"yellow"}
+        selected_color = code_colors[str(found['code'])[0]]
+        word = "/{}".format(found['word'])
+        found_message = "\r[+]  {}  ==>  (status: {} | size: {}) ==> {}{}".format(
+            colored(word, selected_color),
+            found['code'],
+            found['size'],
+            colored(found['url'], selected_color, attrs=['dark']),
+            ' '*100
+        )
+        print(found_message, end=" ")
     
     def print_progress(self):
         while self.worker_loop:
             prec = 100 * float(self.count)/float(self.total_words)
             prec_s = "%.1f" % prec
-            print(f"\r{colored(f'[Words tested: {self.count}/{self.total_words}](Progress: {prec_s}%)', attrs=['dark'])}", end="\r")
+            prog = "\r[Words tested: {}/{}](Progress: {})".format(self.count, self.total_words, prec_s)
+            print(colored(prog, attrs=['dark']),end = "\r")
+
         print(f"\r{' '* 100}", end="\r")
         print(f"\nFinished. Found a total of {self.total_found} out of {self.total_words} urls")
 
@@ -193,7 +205,6 @@ class Condi:
                 self.worker_loop = False
                 continue
             else:
-
                 url = "{}{}".format(self.url, word)
                 req = requests.get(url, headers=self.headers, allow_redirects=False)
                 self.count += 1
@@ -202,9 +213,16 @@ class Condi:
                         continue
                     else:
                         self.total_found += 1
-                        self.urls_found.append(self.found_url_str.format(req.status_code, url, len(req.content)))
+                        url_found_dict = {
+                            "word":word,
+                            "code":req.status_code,
+                            "size":len(req.content),
+                            "url":url
+                        }
+
+                        self.urls_found.append(url_found_dict)
                         if self.worker_loop:
-                            self.print_discovered(req.status_code, url, len(req.content))
+                            self.print_discovered(url_found_dict)
 
     def run_scan(self):
         print(banner)
@@ -214,8 +232,7 @@ class Condi:
             msg = Condi_files().msg
             print(f"{colored(msg, 'cyan')}\n")
             for i in self.urls_found:
-                tmp = i.split(" ")
-                self.print_discovered(tmp[2], tmp[4], tmp[6][:-1])
+                self.print_discovered(i)
         try:
             for _ in range(self.threads_num):
                 self.threads.append(Thread(target=self.worker))
