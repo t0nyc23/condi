@@ -14,7 +14,7 @@ from threading import Thread, active_count
 import requests
 from termcolor import colored
 
-title = f"{'-'*9} condi.py || version: 0.0 || by @h0pper {'-'*9}"
+title = f"{'-'*9} condi.py || version: 0.0 || by @non {'-'*9}"
 
 banner = f"""
     \r{"="*len(title)}
