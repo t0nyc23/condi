@@ -54,16 +54,18 @@ class ScannerCondi:
 		self.totalUrlsFound += 1
 		statusCodeColors = {"1":"magenta", "2":"green", "3":"blue", "4":"red", "5":"yellow"}
 		selectedColor = statusCodeColors[self.responseStatusCode[0]]
-		statusCodeStr = f"{self.responseStatusCode}"
+		statusCodeStr = self.responseStatusCode
 		responseLengthStr = self.responseSize
 		currentUrlStr = self.currentUrl
+		output = f"STATUS::{statusCodeStr} SIZE::{responseLengthStr} PATH::{currentUrlStr}"
+		outputColored = f"{colored(statusCodeStr.ljust(11, ' '), selectedColor)}{responseLengthStr.ljust(11)}{currentUrlStr}"
+		if statusCodeStr[0] == '3':
+			location = urljoin(self.baseUrl, self.responseHeaders['Location'])
+			output = output + f" LOCATION::{location}"
+			outputColored = outputColored + colored(f" ({location})", selectedColor)
 		if self.scannerLoop:
-			print("{}{}{}".format(
-				colored(statusCodeStr.ljust(11, ' '), selectedColor),
-				responseLengthStr.ljust(11),
-				currentUrlStr.ljust(30)))
+			print(outputColored)
 		if self.outputFile: # Will probably change the save output format
-			output = f"STATUS::{statusCodeStr} SIZE::{responseLengthStr} PATH::{currentUrlStr}"
 			addToFile(self.outputFile, output)
 
 	def filterResponseSize(self):
@@ -92,6 +94,7 @@ class ScannerCondi:
 				self.responseStatusCode = str(response.status_code)
 				self.responseSize = str(len(response.content))
 				self.currentUrl = currentUrl
+				self.responseHeaders = response.headers
 				if self.positiveCodes:
 					if self.responseStatusCode in self.positiveCodes:
 						self.filterResponseSize()
