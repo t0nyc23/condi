@@ -35,8 +35,8 @@ class ScannerCondi:
 		while self.scannerLoop:
 			prec = 100 * float(self.totalRequestsCount)/float(self.totalWords)
 			prec_s = "%.1f" % prec
-			prog = "[Words tested: {}/{}](Progress: {}%)".format(self.totalRequestsCount, self.totalWords, prec_s)
-			print(prog,end = "\r")			
+			self.prog = "[Words tested: {}/{}](Progress: {}%)".format(self.totalRequestsCount, self.totalWords, prec_s)
+			print(self.prog, end="\r")			
 
 	def setCustomHeaders(self):
 		self.customHeaders = {"User-Agent": self.customUserAgent}

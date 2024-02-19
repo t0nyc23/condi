@@ -42,5 +42,4 @@ You can run `./condi.py --help` to se all available options.
 ### TO DO
 - add docker support
 - add resume functionality using a restore file
-- add banner to display details about the scan
-  - add a quiet mode that doesn't display the banner
+- display details about the scan

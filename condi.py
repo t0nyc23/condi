@@ -41,7 +41,6 @@ class Tool:
                 verify=False)
 
     def run(self):
-        print(banner)
         self.createWordlist()
         self.condiClass = ScannerCondi(self.arguments, self.wordsQueue)
         self.condiClass.setCustomHeaders()
@@ -57,7 +56,8 @@ class Tool:
             self.condiClass.printProgress()
             for joinThread in self.threadsList:
                 joinThread.join()
-            print(f"\nFinished. Found a total of {self.condiClass.totalUrlsFound} out of {self.totalWords} urls")
+            print(" " * len(self.condiClass.prog))
+            print(f"Finished. Found a total of {self.condiClass.totalUrlsFound} out of {self.totalWords} urls")
         except KeyboardInterrupt:
             print(colored("Got Keyboard Interrupt. Bye...".ljust(90, " "), 'red'))
             self.progressLoop = False
@@ -82,10 +82,11 @@ class Tool:
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-u', required=True, dest="url", type=str, 
+    
+    parser = argparse.ArgumentParser(usage="./condi.py -u <target> -w <wordlist> (options)")
+    parser.add_argument('-u', dest="url", type=str, 
         help="target url for content discovery (e.g. -u http://example.com)")
-    parser.add_argument('-w', required=True, dest="wordlist", type=str, 
+    parser.add_argument('-w', dest="wordlist", type=str, 
         help="wordlist to use for content discovery (e.g. -w wordlist.txt)")
     parser.add_argument('-H', dest="headers", default=[], nargs="*", 
         help="headers to use (e.g. -H 'Header1: Value' 'Header2: value')")
@@ -111,6 +112,17 @@ if __name__ == "__main__":
         help="positive response size values to match (e.g. -ps 1234 3210)")
     parser.add_argument('-ns', dest="negative_sizes", nargs="*", 
         help="negative response size values to filter (e.g. -ns 3210 332)")
+    parser.add_argument("-q", dest="quiet", action="store_true",
+        help="quiet mode, don't display banner")
     arguments = parser.parse_args()
-    tool = Tool(arguments)
-    tool.run()
+
+    if not arguments.quiet:
+        print(banner)
+
+    if not arguments.url or not arguments.wordlist:
+        print()
+        parser.print_help()
+    else:
+        print("_" * 55)
+        tool = Tool(arguments)
+        tool.run()

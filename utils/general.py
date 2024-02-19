@@ -6,9 +6,17 @@ DEFAULT_USER_AGENT = 'Mozilla/5.0'
 
 title = f"{'-'*9} Condi || version: 1.0.0 || by @t0nyc {'-'*9}"
 
-banner = f"""\r{"="*len(title)}
+banner2 = f"""\r{"="*len(title)}
     \r{title}
     \r{"="*len(title)}"""
+
+banner=f"""
+  ██████╗  ██████╗  ███╗   ██╗ ██████╗  ██╗           
+ ██╔════╝ ██╔═══██╗ ████╗  ██║ ██╔══██╗ ██║           
+ ██║      ██║   ██║ ██╔██╗ ██║ ██║  ██║ ██║           
+ ██║      ██║   ██║ ██║╚██╗██║ ██║  ██║ ██║  v1.0.0   
+ ╚██████╗ ╚██████╔╝ ██║ ╚████║ ██████╔╝ ██║  by @t0nyc
+  ╚═════╝  ╚═════╝  ╚═╝  ╚═══╝ ╚═════╝  ╚═╝           """
 
 def openFile(givenfile):
     if os.path.exists(givenfile):
