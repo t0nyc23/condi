@@ -123,6 +123,6 @@ if __name__ == "__main__":
         print()
         parser.print_help()
     else:
-        print("_" * 55)
+        printScanDetails(arguments)
         tool = Tool(arguments)
         tool.run()
