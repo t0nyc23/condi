@@ -37,8 +37,3 @@ You can run `./condi.py --help` to se all available options.
 ```
 ./condi.py -u http://target.com -w wordlist.txt -nc 404 403 401 -p http://127.0.0.1:8080
 ```
-
-
-### TO DO
-- add docker support
-- add resume functionality using a restore file
